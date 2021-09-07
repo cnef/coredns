@@ -4,11 +4,6 @@
     errors
     debug
 
-    rewrite_resp continue {
-       a exact 1.117.245.97 10.100.0.15
-    }
-
-    rewrite_resp continue {
-       a exact 121.40.49.30 192.168.2.123
-    }
+    rewrite_resp stop a exact 1.117.245.97 10.100.0.15
+    rewrite_resp stop a exact 121.40.49.30 192.168.2.123
 }

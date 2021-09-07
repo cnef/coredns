@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/coredns/coredns/plugin"
-	clog "github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/coredns/coredns/request"
 
 	"github.com/miekg/dns"
@@ -38,7 +37,8 @@ type Rewrite struct {
 
 // ResponseRule contains a rule to rewrite a response with.
 type ResponseRule interface {
-	RewriteResponse(rr dns.RR)
+	RewriteResponse(rr dns.RR) Result
+	NeedContinue() bool
 }
 
 // ResponseRules describes an ordered list of response rules to apply
@@ -50,7 +50,6 @@ func (rw Rewrite) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 	wr := NewResponseWriter(w, r)
 	state := request.Request{W: w, Req: r}
 	for _, rule := range rw.Rules {
-		clog.Debug("run rule:", rule.Mode())
 		respRule := rule.Rewrite(ctx, state)
 		if _, ok := dns.IsDomainName(state.Req.Question[0].Name); !ok {
 			err := fmt.Errorf("invalid name after rewrite: %s", state.Req.Question[0].Name)
@@ -58,9 +57,6 @@ func (rw Rewrite) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 			return dns.RcodeServerFailure, err
 		}
 		wr.ResponseRules = append(wr.ResponseRules, respRule)
-		if rule.Mode() == Stop {
-			return plugin.NextOrFailure(rw.Name(), rw.Next, ctx, wr, r)
-		}
 	}
 
 	return plugin.NextOrFailure(rw.Name(), rw.Next, ctx, wr, r)
@@ -73,8 +69,6 @@ func (rw Rewrite) Name() string { return "rewrite_resp" }
 type Rule interface {
 	// Rewrite rewrites the current request.
 	Rewrite(ctx context.Context, state request.Request) ResponseRule
-	// Mode returns the processing mode stop or continue.
-	Mode() string
 }
 
 func newRule(args ...string) (Rule, error) {
