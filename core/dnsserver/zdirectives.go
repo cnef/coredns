@@ -19,6 +19,7 @@ var Directives = []string{
 	"bufsize",
 	"root",
 	"bind",
+	"clientsubnet",
 	"debug",
 	"trace",
 	"ready",

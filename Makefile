@@ -8,7 +8,7 @@ GOPATH?=$(HOME)/go
 MAKEPWD:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 CGO_ENABLED:=0
 GIT_REPO_PATH:=github.com/coredns/coredns
-DOCKER_IMAGE_FULLNAME:=registry-in.dustess.com/base/coredns:v1.8-rewrite_resp
+DOCKER_IMAGE_FULLNAME:=registry-in.dustess.com/base/coredns:v1.8-rewrite_resp.2
 
 .PHONY: all
 all: coredns
@@ -42,6 +42,6 @@ image:
 	go build $(BUILDOPTS) -ldflags="-s -w -X github.com/coredns/coredns/coremain.GitCommit=$(GITCOMMIT)" -o $(BINARY)
 
 	DOCKER_BUILDKIT=0 docker buildx build --platform=linux/amd64 --push  \
-	--progress=plain \
+	--progress=plain --no-cache \
 	-t $(DOCKER_IMAGE_FULLNAME) \
 	.

@@ -1,0 +1,6 @@
+.:53 {
+    forward . 119.29.29.29
+    log
+
+    clientsubnet 101.34.173.60
+}
